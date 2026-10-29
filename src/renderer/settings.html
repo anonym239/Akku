@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="de" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:" />
+    <title>Akku Widget – Einstellungen</title>
+    <link rel="stylesheet" href="shared/base.css" />
+    <link rel="stylesheet" href="shared/widget.css" />
+    <link rel="stylesheet" href="settings.css" />
+  </head>
+  <body>
+    <header class="titlebar">
+      <div class="tb-brand">
+        <img src="../../assets/icon.png" alt="" class="tb-logo" />
+        <span>Akku Widget</span>
+      </div>
+      <div class="tb-controls">
+        <button class="tb-btn" data-win="minimize" title="Minimieren" data-icon="minimize"></button>
+        <button class="tb-btn" data-win="maximize" title="Maximieren" data-icon="maximize"></button>
+        <button class="tb-btn tb-close" data-win="close" title="Schließen" data-icon="close"></button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <nav class="sidebar">
+        <button class="nav-item is-active" data-page="devices"><span data-icon="devices"></span>Geräte</button>
+        <button class="nav-item" data-page="look"><span data-icon="palette"></span>Aussehen</button>
+        <button class="nav-item" data-page="behavior"><span data-icon="sliders"></span>Verhalten</button>
+        <button class="nav-item" data-page="alerts"><span data-icon="bell"></span>Benachrichtigungen</button>
+        <button class="nav-item" data-page="about"><span data-icon="info"></span>Über</button>
+
+        <div class="sidebar-foot">
+          <label class="widget-toggle">
+            <span>
+              <strong>Widget</strong>
+              <small id="widgetStateText">wird angezeigt</small>
+            </span>
+            <span class="switch"><input type="checkbox" data-key="showWidget" /><i></i></span>
+          </label>
+        </div>
+      </nav>
+
+      <main class="content">
+        <!-- Geräte -->
+        <section class="page is-active" id="page-devices">
+          <div class="page-head">
+            <div>
+              <h1>Geräte</h1>
+              <p>Alle Geräte, deren Akkustand gerade erkannt wird.</p>
+            </div>
+            <button class="btn btn-primary" id="refreshBtn"><span data-icon="refresh"></span>Aktualisieren</button>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <span class="stat-label">Geräte</span>
+              <span class="stat-value" id="statCount">0</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Niedrigster Akku</span>
+              <span class="stat-value" id="statLowest">–</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Zuletzt aktualisiert</span>
+              <span class="stat-value stat-small" id="statUpdated">–</span>
+            </div>
+          </div>
+
+          <div class="alert" id="errorBox" hidden>
+            <span data-icon="alert"></span>
+            <div><strong>Akkustand konnte nicht gelesen werden</strong><p id="errorText"></p></div>
+          </div>
+
+          <div class="device-list" id="deviceList"></div>
+
+          <div class="empty" id="emptyBox" hidden>
+            <div class="empty-ico" data-icon="other"></div>
+            <h2>Noch keine Geräte gefunden</h2>
+            <p id="emptyHint">Koppel deine Maus, Tastatur oder dein Headset per Bluetooth. Sobald Windows den Akkustand kennt, erscheint das Gerät hier automatisch.</p>
+            <button class="btn" id="demoBtn"><span data-icon="sparkles"></span>Demo-Geräte anzeigen</button>
+          </div>
+        </section>
+
+        <!-- Aussehen -->
+        <section class="page" id="page-look">
+          <div class="page-head">
+            <div>
+              <h1>Aussehen</h1>
+              <p>Änderungen siehst du sofort in der Vorschau und auf dem Desktop.</p>
+            </div>
+          </div>
+
+          <div class="look-grid">
+            <div class="cards">
+              <div class="card">
+                <div class="row">
+                  <div class="row-text"><strong>Design</strong><small>Hell, dunkel oder wie das System</small></div>
+                  <div class="segmented" data-key="theme">
+                    <button data-value="auto">Automatisch</button>
+                    <button data-value="dark">Dunkel</button>
+                    <button data-value="light">Hell</button>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="row-text"><strong>Akzentfarbe</strong><small>Für Logo, Knöpfe und Hervorhebungen</small></div>
+                  <div class="swatches" id="swatches"></div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="row">
+                  <div class="row-text"><strong>Darstellung</strong><small>Liste mit Balken oder Ringe wie am Handy</small></div>
+                  <div class="segmented" data-key="layout">
+                    <button data-value="list">Liste</button>
+                    <button data-value="rings">Ringe</button>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="row-text"><strong>Größe</strong></div>
+                  <div class="segmented" data-key="size">
+                    <button data-value="compact">Kompakt</button>
+                    <button data-value="normal">Normal</button>
+                    <button data-value="large">Groß</button>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="row-text"><strong>Deckkraft</strong><small>Hintergrund des Widgets</small></div>
+                  <div class="range">
+                    <input type="range" min="30" max="100" step="1" data-key="opacity" data-scale="100" />
+                    <output id="opacityOut">92 %</output>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <label class="row">
+                  <div class="row-text"><strong>Prozent anzeigen</strong></div>
+                  <span class="switch"><input type="checkbox" data-key="showPercent" /><i></i></span>
+                </label>
+                <label class="row">
+                  <div class="row-text"><strong>Name und Status anzeigen</strong><small>z. B. „Lädt“ oder „Bitte aufladen“</small></div>
+                  <span class="switch"><input type="checkbox" data-key="showStatus" /><i></i></span>
+                </label>
+                <label class="row">
+                  <div class="row-text"><strong>Akku dieses PCs</strong><small>Nur bei Laptops vorhanden</small></div>
+                  <span class="switch"><input type="checkbox" data-key="showSystemBattery" /><i></i></span>
+                </label>
+                <label class="row">
+                  <div class="row-text"><strong>Getrennte Geräte anzeigen</strong><small>Zeigt den zuletzt bekannten Stand</small></div>
+                  <span class="switch"><input type="checkbox" data-key="showDisconnected" /><i></i></span>
+                </label>
+              </div>
+            </div>
+
+            <aside class="preview">
+              <span class="preview-label">Vorschau</span>
+              <div class="preview-stage" id="previewStage"><div class="w-card" id="previewCard"></div></div>
+            </aside>
+          </div>
+        </section>
+
+        <!-- Verhalten -->
+        <section class="page" id="page-behavior">
+          <div class="page-head">
+            <div>
+              <h1>Verhalten</h1>
+              <p>Wann und wie das Widget erscheint.</p>
+            </div>
+          </div>
+          <div class="cards">
+            <div class="card">
+              <label class="row">
+                <div class="row-text"><strong>Mit dem PC starten</strong><small>Widget erscheint direkt nach der Anmeldung</small></div>
+                <span class="switch"><input type="checkbox" data-key="autostart" /><i></i></span>
+              </label>
+              <label class="row">
+                <div class="row-text"><strong>Einstellungen beim Öffnen zeigen</strong><small>Beim Autostart bleibt nur das Widget sichtbar</small></div>
+                <span class="switch"><input type="checkbox" data-key="openSettingsOnStart" /><i></i></span>
+              </label>
+            </div>
+            <div class="card">
+              <label class="row">
+                <div class="row-text"><strong>Immer im Vordergrund</strong><small>Widget liegt über allen Fenstern</small></div>
+                <span class="switch"><input type="checkbox" data-key="alwaysOnTop" /><i></i></span>
+              </label>
+              <label class="row">
+                <div class="row-text"><strong>Position sperren</strong><small>Verhindert versehentliches Verschieben</small></div>
+                <span class="switch"><input type="checkbox" data-key="locked" /><i></i></span>
+              </label>
+              <div class="row">
+                <div class="row-text"><strong>Position</strong><small>Widget einfach mit der Maus an die gewünschte Stelle ziehen</small></div>
+                <button class="btn" id="resetPosBtn">Zurücksetzen</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="row">
+                <div class="row-text"><strong>Aktualisieren alle</strong><small>Wie oft der Akkustand abgefragt wird</small></div>
+                <div class="select">
+                  <select data-key="refreshSec" data-number>
+                    <option value="15">15 Sekunden</option>
+                    <option value="30">30 Sekunden</option>
+                    <option value="60">1 Minute</option>
+                    <option value="120">2 Minuten</option>
+                    <option value="300">5 Minuten</option>
+                    <option value="600">10 Minuten</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Benachrichtigungen -->
+        <section class="page" id="page-alerts">
+          <div class="page-head">
+            <div>
+              <h1>Benachrichtigungen</h1>
+              <p>Rechtzeitig erinnert werden, bevor die Maus ausgeht.</p>
+            </div>
+          </div>
+          <div class="cards">
+            <div class="card">
+              <label class="row">
+                <div class="row-text"><strong>Bei niedrigem Akku warnen</strong><small>Einmalige Windows-Benachrichtigung pro Gerät</small></div>
+                <span class="switch"><input type="checkbox" data-key="notifyLow" /><i></i></span>
+              </label>
+              <div class="row">
+                <div class="row-text"><strong>Warnschwelle</strong><small>Ab diesem Wert wird das Gerät rot markiert</small></div>
+                <div class="range">
+                  <input type="range" min="5" max="50" step="5" data-key="lowThreshold" />
+                  <output id="thresholdOut">20 %</output>
+                </div>
+              </div>
+            </div>
+            <div class="threshold-demo" id="thresholdDemo"></div>
+          </div>
+        </section>
+
+        <!-- Über -->
+        <section class="page" id="page-about">
+          <div class="about-hero">
+            <img src="../../assets/icon.png" alt="" />
+            <div>
+              <h1>Akku Widget</h1>
+              <p>Version <span id="version">1.0.0</span> · <span id="platform"></span></p>
+            </div>
+          </div>
+          <div class="cards">
+            <div class="card prose">
+              <strong>So wird der Akkustand gelesen</strong>
+              <p id="sourceText"></p>
+            </div>
+            <div class="card">
+              <label class="row">
+                <div class="row-text"><strong>Demo-Modus</strong><small>Zeigt Beispielgeräte, um das Widget auszuprobieren</small></div>
+                <span class="switch"><input type="checkbox" data-key="demo" /><i></i></span>
+              </label>
+              <div class="row">
+                <div class="row-text"><strong>Einstellungen zurücksetzen</strong><small>Alles auf Standard, Gerätenamen werden gelöscht</small></div>
+                <button class="btn" id="resetBtn">Zurücksetzen</button>
+              </div>
+              <div class="row">
+                <div class="row-text"><strong>Projekt auf GitHub</strong><small>Neue Versionen und Quellcode</small></div>
+                <button class="btn" id="githubBtn">Öffnen</button>
+              </div>
+              <div class="row">
+                <div class="row-text"><strong>Akku Widget beenden</strong><small>Schließt Widget und Symbol im Infobereich</small></div>
+                <button class="btn btn-danger" id="quitBtn"><span data-icon="power"></span>Beenden</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status"></div>
+
+    <script src="shared/icons.js"></script>
+    <script src="shared/render.js"></script>
+    <script src="settings.js"></script>
+  </body>
+</html>

@@ -1,0 +1,24 @@
+html,
+body {
+  background: transparent;
+  overflow: hidden;
+}
+
+/* Rand für den Schatten innerhalb des transparenten Fensters. */
+.stage {
+  display: inline-block;
+  padding: 14px 18px 22px;
+}
+
+.w-card {
+  -webkit-app-region: drag;
+  cursor: default;
+}
+
+.w-card.is-locked {
+  -webkit-app-region: no-drag;
+}
+
+.w-card button {
+  -webkit-app-region: no-drag;
+}

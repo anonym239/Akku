@@ -1,0 +1,421 @@
+/* Aussehen der Widget-Karte (auch in der Vorschau der Einstellungen). */
+.w-card {
+  --w-opacity: 92%;
+  font-size: 14px;
+  width: 19em;
+  padding: 0.95em 1em 1em;
+  border-radius: 1.45em;
+  background: color-mix(in srgb, var(--w-bg) var(--w-opacity), transparent);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  user-select: none;
+  overflow: hidden;
+  position: relative;
+}
+
+.w-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: radial-gradient(120% 70% at 0% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%);
+}
+
+.w-card.layout-rings {
+  width: auto;
+  min-width: 13em;
+}
+
+.w-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6em;
+  margin-bottom: 0.75em;
+  height: 1.8em;
+}
+
+.w-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  font-weight: 650;
+  font-size: 0.95em;
+  letter-spacing: 0.01em;
+}
+
+.w-logo {
+  display: grid;
+  place-items: center;
+  width: 1.7em;
+  height: 1.7em;
+  border-radius: 0.55em;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 55%, #22d3ee));
+}
+
+.w-logo svg {
+  width: 1.1em;
+  height: 1.1em;
+}
+
+/* Zeit ist sichtbar, beim Überfahren erscheinen stattdessen die Knöpfe. */
+.w-tools {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 4.2em;
+  height: 100%;
+}
+
+.w-time {
+  font-size: 0.78em;
+  color: var(--muted);
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+
+.w-btns {
+  position: absolute;
+  right: -0.3em;
+  top: 50%;
+  display: flex;
+  gap: 0.15em;
+  transform: translateY(-50%);
+}
+
+.w-card:hover .w-time {
+  opacity: 0;
+}
+
+.w-icon-btn {
+  -webkit-app-region: no-drag;
+  display: grid;
+  place-items: center;
+  width: 1.85em;
+  height: 1.85em;
+  padding: 0;
+  border: 0;
+  border-radius: 0.6em;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+}
+
+.w-icon-btn svg {
+  width: 1.05em;
+  height: 1.05em;
+}
+
+.w-card:hover .w-icon-btn,
+.w-icon-btn:focus-visible {
+  opacity: 1;
+}
+
+.w-icon-btn:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.w-icon-btn.is-spinning svg {
+  animation: w-spin 0.8s linear infinite;
+}
+
+@keyframes w-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- Liste */
+
+.w-list {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45em;
+}
+
+.w-row {
+  --tone: var(--good);
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+  padding: 0.6em 0.7em;
+  border-radius: 1em;
+  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+  transition: background 0.15s;
+}
+
+.w-row:hover {
+  background: var(--surface-2);
+}
+
+.tone-good { --tone: var(--good); }
+.tone-warn { --tone: var(--warn); }
+.tone-bad { --tone: var(--bad); }
+.tone-charge { --tone: var(--charge); }
+
+.w-ico {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.5em;
+  height: 2.5em;
+  border-radius: 0.8em;
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 14%, transparent);
+}
+
+.w-ico svg {
+  width: 1.35em;
+  height: 1.35em;
+}
+
+.w-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.w-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5em;
+}
+
+.w-name {
+  font-size: 0.92em;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.w-pct {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  font-size: 1.05em;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.w-pct small {
+  font-size: 0.7em;
+  font-weight: 600;
+  color: var(--muted);
+  margin-left: 0.1em;
+}
+
+.w-bolt {
+  display: inline-block;
+  width: 0.85em;
+  height: 0.85em;
+  color: var(--charge);
+  margin-right: 0.15em;
+  align-self: center;
+}
+
+.w-bar {
+  height: 0.38em;
+  margin-top: 0.4em;
+  border-radius: 999px;
+  background: var(--track);
+  overflow: hidden;
+}
+
+.w-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--tone) 72%, #fff), var(--tone));
+  transition: width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.w-meta {
+  margin-top: 0.3em;
+  font-size: 0.74em;
+  color: var(--muted);
+}
+
+.tone-bad .w-meta {
+  color: var(--bad);
+  font-weight: 600;
+}
+
+.tone-charge .w-meta {
+  color: var(--charge);
+}
+
+.is-off {
+  opacity: 0.5;
+}
+
+/* ---------- Ringe */
+
+.w-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 2), 5.6em);
+  gap: 0.6em;
+  justify-content: center;
+}
+
+.w-ring {
+  --tone: var(--good);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.55em 0.3em 0.5em;
+  border-radius: 1.05em;
+  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+  min-width: 0;
+}
+
+.w-ring-gfx {
+  position: relative;
+  width: 3.9em;
+  height: 3.9em;
+}
+
+.w-ring-gfx svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.w-ring .track,
+.w-ring .value {
+  fill: none;
+  stroke-width: 6;
+}
+
+.w-ring .track {
+  stroke: var(--track);
+}
+
+.w-ring .value {
+  stroke: var(--tone);
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.w-ring-ico {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--tone);
+}
+
+.w-ring-ico svg {
+  width: 1.5em;
+  height: 1.5em;
+}
+
+.w-ring-bolt {
+  position: absolute;
+  right: 0;
+  bottom: 0.1em;
+  display: grid;
+  place-items: center;
+  width: 1.25em;
+  height: 1.25em;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--charge);
+  box-shadow: 0 0 0 2px var(--w-bg);
+}
+
+.w-ring-bolt svg {
+  width: 0.8em;
+  height: 0.8em;
+}
+
+.w-ring-pct {
+  margin-top: 0.35em;
+  font-weight: 700;
+  font-size: 1em;
+  font-variant-numeric: tabular-nums;
+}
+
+.w-ring-pct small {
+  font-size: 0.7em;
+  color: var(--muted);
+  margin-left: 0.08em;
+}
+
+.w-ring-name {
+  max-width: 100%;
+  padding: 0 0.25em;
+  font-size: 0.72em;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Leerzustand */
+
+.w-empty {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0.6em 0.4em 0.3em;
+}
+
+.w-empty-ico {
+  display: grid;
+  place-items: center;
+  width: 2.8em;
+  height: 2.8em;
+  border-radius: 50%;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.w-empty-ico svg {
+  width: 1.4em;
+  height: 1.4em;
+}
+
+.w-empty-title {
+  margin-top: 0.65em;
+  font-weight: 650;
+  font-size: 0.95em;
+}
+
+.w-empty-text {
+  margin-top: 0.3em;
+  font-size: 0.8em;
+  line-height: 1.4;
+  color: var(--muted);
+  max-width: 15em;
+  word-break: break-word;
+}
+
+.w-btn {
+  -webkit-app-region: no-drag;
+  margin-top: 0.8em;
+  padding: 0.45em 1em;
+  border: 0;
+  border-radius: 999px;
+  font-size: 0.82em;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  cursor: pointer;
+}
+
+.w-btn:hover {
+  filter: brightness(1.08);
+}

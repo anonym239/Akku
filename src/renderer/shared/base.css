@@ -1,0 +1,75 @@
+/* Farb-Tokens für hell und dunkel. Das Theme wird per data-theme gesetzt. */
+:root {
+  --accent: #7c5cff;
+  --good: #22c55e;
+  --warn: #f59e0b;
+  --bad: #ef4444;
+  --charge: #22c5d9;
+  --radius: 14px;
+  --font: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "SF Pro Text", Ubuntu, Cantarell, "Noto Sans", sans-serif;
+  color-scheme: dark;
+}
+
+:root[data-theme="dark"] {
+  --bg: #12131a;
+  --bg-2: #171821;
+  --surface: #1d1f2a;
+  --surface-2: #252836;
+  --surface-3: #2e3242;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.13);
+  --text: #eef0f7;
+  --text-2: #b4b9cc;
+  --muted: #858ba1;
+  --shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --w-bg: #181a24;
+  --track: rgba(255, 255, 255, 0.08);
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #f3f4f9;
+  --bg-2: #eceef5;
+  --surface: #ffffff;
+  --surface-2: #f2f3f8;
+  --surface-3: #e6e8f0;
+  --border: rgba(20, 24, 45, 0.08);
+  --border-strong: rgba(20, 24, 45, 0.15);
+  --text: #161925;
+  --text-2: #444a5e;
+  --muted: #6b7189;
+  --shadow: 0 18px 40px -14px rgba(30, 35, 70, 0.28), 0 2px 8px rgba(30, 35, 70, 0.08);
+  --w-bg: #ffffff;
+  --track: rgba(20, 24, 45, 0.08);
+  --good: #16a34a;
+  --warn: #d97706;
+  --bad: #dc2626;
+  --charge: #0891b2;
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+svg {
+  display: block;
+}

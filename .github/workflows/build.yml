@@ -1,0 +1,93 @@
+name: Testen, bauen & veröffentlichen
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Tests (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Unit-Tests
+        run: npm test
+      - name: Windows-Akkuabfrage (PowerShell) ausführen
+        if: runner.os == 'Windows'
+        run: node -e "require('./src/main/battery/windows').getDevices().then(d => console.log('OK, Geräte:', JSON.stringify(d))).catch(e => { console.error(e); process.exit(1); })"
+      - name: Oberfläche prüfen (Screenshots, Stilfehler, Bedienung)
+        run: npm run test:ui
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots-${{ matrix.os }}
+          path: screenshots/check/
+          if-no-files-found: ignore
+
+  build:
+    name: Bauen (${{ matrix.os }})
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx electron-builder --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-${{ matrix.os }}
+          path: |
+            dist/*.exe
+            dist/*.AppImage
+            dist/*.dmg
+          if-no-files-found: error
+
+  release:
+    name: Release veröffentlichen
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: app-*
+          merge-multiple: true
+      - name: Version lesen
+        id: v
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.v.outputs.version }}
+          name: Akku Widget ${{ steps.v.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          make_latest: true
+          body: |
+            **Windows:** `Akku-Widget-${{ steps.v.outputs.version }}-win-x64.exe` herunterladen und starten – installiert sich mit einem Klick und startet sofort.
+            Ohne Installation: `Akku-Widget-${{ steps.v.outputs.version }}-portable.exe`.
+
+            Linux: `.AppImage` · macOS: `.dmg`
+
+            Gebaut aus Commit ${{ github.sha }}.
+          files: artifacts/*

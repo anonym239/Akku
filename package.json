@@ -1,0 +1,65 @@
+{
+  "name": "akku-widget",
+  "productName": "Akku Widget",
+  "version": "1.0.0",
+  "description": "Desktop-Widget, das den Akkustand von Maus, Tastatur, Headset & Co. immer im Blick behält.",
+  "main": "src/main/main.js",
+  "author": "anonym239",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "demo": "electron . --demo",
+    "test": "node --test test/*.test.js",
+    "test:ui": "node scripts/ui-check.js",
+    "icons": "node scripts/make-icons.js",
+    "dist": "electron-builder --publish never",
+    "dist:win": "electron-builder --win --publish never"
+  },
+  "devDependencies": {
+    "electron": "44.7.1",
+    "electron-builder": "26.17.0"
+  },
+  "build": {
+    "appId": "com.anonym239.akkuwidget",
+    "productName": "Akku Widget",
+    "artifactName": "Akku-Widget-${version}-${os}-${arch}.${ext}",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ]
+    },
+    "portable": {
+      "artifactName": "Akku-Widget-${version}-portable.${ext}"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "runAfterFinish": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Akku Widget"
+    },
+    "linux": {
+      "icon": "build/icon.png",
+      "category": "Utility",
+      "target": ["AppImage"]
+    },
+    "mac": {
+      "icon": "build/icon.png",
+      "category": "public.app-category.utilities",
+      "target": ["dmg"]
+    }
+  }
+}
