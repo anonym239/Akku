@@ -1,10 +1,15 @@
 /* Aussehen der Widget-Karte (auch in der Vorschau der Einstellungen). */
 .w-card {
-  --w-opacity: 92%;
+  --w-opacity: 40%;
+  --w-width: 19em;
+  --w-radius: 1.7em;
+  --w-blur: 24px;
+  --w-row: color-mix(in srgb, var(--surface-2) 70%, transparent);
+  --w-row-hover: var(--surface-2);
   font-size: 14px;
-  width: 19em;
+  width: var(--w-width);
   padding: 0.95em 1em 1em;
-  border-radius: 1.45em;
+  border-radius: var(--w-radius);
   background: color-mix(in srgb, var(--w-bg) var(--w-opacity), transparent);
   border: 1px solid var(--border-strong);
   box-shadow: var(--shadow);
@@ -12,20 +17,90 @@
   user-select: none;
   overflow: hidden;
   position: relative;
+  isolation: isolate;
 }
 
-.w-card::before {
+.w-card.layout-rings,
+.w-card.layout-gauge {
+  width: auto;
+  min-width: 9em;
+}
+
+.w-card.no-head {
+  padding-top: 1em;
+}
+
+/* Hintergrund-Ebenen: verschwommenes Hintergrundbild und Tönung */
+.w-bg-img,
+.w-bg-tint {
+  position: absolute;
+  pointer-events: none;
+}
+
+.w-bg-img {
+  --pad: 60px;
+  inset: calc(var(--pad) * -1);
+  display: none;
+  filter: blur(var(--w-blur)) saturate(1.7);
+  z-index: -2;
+}
+
+.w-bg-tint {
+  inset: 0;
+  z-index: -1;
+  display: none;
+  background: color-mix(in srgb, var(--w-bg) var(--w-opacity), transparent);
+}
+
+/* Glas wie bei Apple: Hintergrundbild verschwommen + leichte Tönung */
+.style-glass.has-wallpaper {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 18px 44px -16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.style-glass.has-wallpaper .w-bg-img,
+.style-glass.has-wallpaper .w-bg-tint {
+  display: block;
+}
+
+.style-glass[data-theme="light"].has-wallpaper {
+  border-color: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 18px 44px -16px rgba(20, 30, 60, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* Ohne Hintergrundbild verhält sich Glas wie "Durchsichtig". */
+.style-glass,
+.style-transparent {
+  --w-row: color-mix(in srgb, var(--text) 7%, transparent);
+  --w-row-hover: color-mix(in srgb, var(--text) 12%, transparent);
+  /* Auf buntem Hintergrund brauchen Nebentexte mehr Kontrast. */
+  --muted: color-mix(in srgb, var(--text) 74%, transparent);
+}
+
+.style-transparent {
+  border-color: color-mix(in srgb, var(--text) 14%, transparent);
+  box-shadow: none;
+}
+
+.style-transparent .w-name,
+.style-transparent .w-pct,
+.style-transparent .w-title,
+.style-transparent .w-ring-pct,
+.style-transparent .w-ring-name,
+.style-transparent .w-meta,
+.style-transparent .w-time {
+  text-shadow: 0 1px 3px color-mix(in srgb, var(--w-bg) 80%, transparent);
+}
+
+.style-solid::before {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
   border-radius: inherit;
   background: radial-gradient(120% 70% at 0% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%);
-}
-
-.w-card.layout-rings {
-  width: auto;
-  min-width: 13em;
+  z-index: -1;
 }
 
 .w-head {
@@ -148,13 +223,13 @@
   align-items: center;
   gap: 0.8em;
   padding: 0.6em 0.7em;
-  border-radius: 1em;
-  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+  border-radius: calc(var(--w-radius) * 0.6);
+  background: var(--w-row);
   transition: background 0.15s;
 }
 
 .w-row:hover {
-  background: var(--surface-2);
+  background: var(--w-row-hover);
 }
 
 .tone-good { --tone: var(--good); }
@@ -274,8 +349,8 @@
   flex-direction: column;
   align-items: center;
   padding: 0.55em 0.3em 0.5em;
-  border-radius: 1.05em;
-  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+  border-radius: calc(var(--w-radius) * 0.6);
+  background: var(--w-row);
   min-width: 0;
 }
 
@@ -418,4 +493,108 @@
 
 .w-btn:hover {
   filter: brightness(1.08);
+}
+
+/* ---------- Bogen (wie iOS) */
+
+.w-gauge {
+  --tone: var(--good);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  padding: 0.2em 0.2em 0.1em;
+}
+
+.w-gauge-gfx {
+  position: relative;
+  width: 4.4em;
+  height: 4.4em;
+}
+
+.w-gauge-gfx svg {
+  width: 100%;
+  height: 100%;
+  /* Start unten links (135°), 270° im Uhrzeigersinn bis unten rechts */
+  transform: rotate(135deg);
+}
+
+.w-gauge .track,
+.w-gauge .value {
+  fill: none;
+  stroke-width: 6.5;
+  stroke-linecap: round;
+}
+
+.w-gauge .track {
+  stroke: color-mix(in srgb, var(--text) 13%, transparent);
+}
+
+.w-gauge .value {
+  stroke: var(--tone);
+  transition: stroke-dasharray 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.w-gauge-ico {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--text);
+}
+
+.w-gauge-ico svg {
+  width: 1.55em;
+  height: 1.55em;
+}
+
+.w-gauge-gap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.05em;
+  text-align: center;
+  font-size: 0.8em;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.w-gauge-gap small {
+  font-size: 0.75em;
+  color: var(--muted);
+}
+
+/* Ladeblitz sitzt in der Lücke unten, damit er den Bogen nicht verdeckt */
+.w-gauge-bolt {
+  position: absolute;
+  left: 50%;
+  bottom: 0.05em;
+  width: 0.95em;
+  height: 0.95em;
+  transform: translateX(-50%);
+  color: var(--charge);
+}
+
+.w-gauge-gap {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+}
+
+.w-gauge.tone-bad .w-gauge-ico {
+  color: var(--bad);
+}
+
+.layout-gauge .w-grid {
+  grid-template-columns: repeat(var(--cols, 2), 5.2em);
+  gap: 0.75em 0.9em;
+}
+
+/* Knöpfe schweben, wenn die Kopfzeile ausgeblendet ist */
+.w-tools-float {
+  position: absolute;
+  top: 0.45em;
+  right: 0.6em;
+  height: 1.85em;
+  z-index: 2;
 }

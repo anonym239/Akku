@@ -943,3 +943,204 @@ select option {
     width: 200px;
   }
 }
+
+/* ---------- Auto-Design & Vorlagen */
+
+.inline-ico {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 7px;
+  vertical-align: -3px;
+  color: var(--accent);
+}
+
+.auto-card {
+  background:
+    radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 60%),
+    var(--surface);
+}
+
+.auto-result {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.auto-result small {
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.auto-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.auto-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.auto-chip .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.presets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.preset {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s;
+  min-width: 0;
+}
+
+.preset:hover {
+  border-color: var(--accent);
+}
+
+.preset:active {
+  transform: translateY(1px);
+}
+
+.preset strong {
+  margin-top: 8px;
+  font-size: 13.5px;
+}
+
+.preset small {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.preset-gfx {
+  display: grid;
+  width: 100%;
+  height: 62px;
+  border-radius: 10px;
+  padding: 9px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #3b2a6b, #1d6c8c 60%, #e08a5b);
+}
+
+.preset-apple {
+  grid-template-columns: repeat(4, 1fr);
+  align-items: center;
+  justify-items: center;
+  background-color: transparent;
+  box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(4px);
+}
+
+.preset-apple i {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 3.5px solid #4ade80;
+  border-bottom-color: transparent;
+  transform: rotate(0deg);
+}
+
+.preset-apple i:nth-child(3) {
+  border-color: #f87171;
+  border-bottom-color: transparent;
+}
+
+.preset-clear,
+.preset-classic {
+  align-content: center;
+  gap: 5px;
+}
+
+.preset-clear b,
+.preset-classic b {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.preset-clear b:nth-child(2),
+.preset-classic b:nth-child(2) {
+  width: 70%;
+}
+
+.preset-clear b:nth-child(3),
+.preset-classic b:nth-child(3) {
+  width: 45%;
+}
+
+.preset-classic {
+  background: var(--surface-3);
+  box-shadow: inset 0 0 0 8px var(--surface-2);
+}
+
+.preset-classic b {
+  background: var(--accent);
+}
+
+/* ---------- Empfänger */
+
+.section-title {
+  margin: 26px 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.receivers {
+  margin-bottom: 18px;
+}
+
+.receiver .row-text {
+  flex: 1 1 160px;
+}
+
+.receiver .chip {
+  flex: 0 1 auto;
+  white-space: normal;
+}
+
+.device-ico.small {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+}
+
+.device-ico.small svg {
+  width: 18px;
+  height: 18px;
+}
+
+.tone-muted {
+  --tone: var(--muted);
+}
+
+.preview-stage.has-wallpaper {
+  background-repeat: no-repeat;
+}

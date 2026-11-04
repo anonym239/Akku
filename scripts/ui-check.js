@@ -19,8 +19,8 @@ const cmdArgs = cmd === 'xvfb-run' ? ['-a', '-s', '-screen 0 1600x1000x24', elec
 spawnSync(cmd, cmdArgs, {
   cwd: root,
   stdio: 'ignore',
-  timeout: 180000,
-  env: { ...process.env, AKKU_SMOKE_DIR: out, AKKU_SMOKE_FULL: '1', AKKU_USER_DATA: fs.mkdtempSync(path.join(os.tmpdir(), 'akku-ui-')) },
+  timeout: 420000,
+  env: { ...process.env, AKKU_WALLPAPER: path.join(root, 'test', 'fixtures', 'wallpaper.jpg'), AKKU_SMOKE_DIR: out, AKKU_SMOKE_FULL: '1', AKKU_USER_DATA: fs.mkdtempSync(path.join(os.tmpdir(), 'akku-ui-')) },
 });
 
 const reportFile = path.join(out, 'report.json');
@@ -31,6 +31,7 @@ if (!fs.existsSync(reportFile)) {
 const report = JSON.parse(fs.readFileSync(reportFile, 'utf8'));
 const problems = [];
 if (report.devices < 1) problems.push('Keine Demo-Geräte geladen');
+if (!report.hid || String(report.hid).startsWith('FEHLER')) problems.push(`USB-Zugriff (node-hid) lädt nicht: ${report.hid}`);
 for (const [name, w] of Object.entries(report.windows)) {
   if (!w.visible) problems.push(`${name}: Fenster nicht sichtbar`);
   for (const e of [...w.errors, ...(w.errorsAfter || [])]) problems.push(`${name}: JS-Fehler ${e}`);

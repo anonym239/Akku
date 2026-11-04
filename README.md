@@ -1,10 +1,11 @@
 # 🔋 Akku Widget
 
-Ein schlankes Desktop-Widget, das dir **immer** zeigt, wie voll die Akkus von **Maus, Tastatur, Headset, Controller & Co.** sind – so wie die Akku-Widgets am Handy. Kein Programm mehr öffnen, kein Suchen in den Windows-Einstellungen.
+Ein Desktop-Widget, das dir **immer** zeigt, wie voll die Akkus von **Maus, Tastatur, Headset, Controller & Co.** sind – wie die Akku-Widgets am iPhone oder Mac. Auch für Mäuse und Tastaturen mit **eigenem USB-Empfänger** (2,4 GHz), nicht nur für Bluetooth.
 
 <p>
+  <img src="docs/widget-bogen.png" alt="Widget mit Bögen im Glas-Stil" height="300" />
+  <img src="docs/widget-hell.png" alt="Helles Glas" height="300" />
   <img src="docs/widget-liste.png" alt="Widget als Liste" height="300" />
-  <img src="docs/widget-ringe.png" alt="Widget mit Ringen" height="300" />
 </p>
 
 ![Einstellungen](docs/einstellungen.png)
@@ -20,27 +21,25 @@ Ein schlankes Desktop-Widget, das dir **immer** zeigt, wie voll die Akkus von **
 
 ## Funktionen
 
-- **Widget auf dem Desktop** – rahmenlos und halbtransparent; einfach mit der Maus hinziehen, wo es stehen soll
-- **Zwei Ansichten:** Liste mit Balken oder Ringe wie am Handy, in drei Größen
-- **Farben:** Rot, Gelb und Grün zeigen auf einen Blick, wann geladen werden muss; ein Blitz zeigt an, dass das Gerät gerade lädt
-- **Warnung**, sobald ein Gerät unter die eingestellte Schwelle fällt (Standard: 20 %)
-- **Startet mit Windows** – beim Autostart erscheint nur das Widget, die Einstellungen bleiben zu
-- **Einstellungen:** Hell/Dunkel/System, Akzentfarbe, Deckkraft, immer im Vordergrund, Position sperren, Aktualisierungsintervall
-- **Geräte umbenennen oder ausblenden**
-- Symbol im Infobereich (Taskleiste): Klick öffnet die Einstellungen, Rechtsklick zeigt ein Menü
-- **Demo-Modus** zum Ausprobieren ohne passende Geräte
-
-Rechtsklick auf das Widget öffnet ein Menü: Aktualisieren, Einstellungen, Position sperren, Ausblenden und Beenden.
+- **Bogen wie bei iOS:** Der Akku läuft als Bogen von unten links im Uhrzeigersinn bis unten rechts (270°), das Geräte-Icon steht in der Mitte. Die Prozentzahl steht wahlweise **darunter**, **in der Lücke** oder gar nicht.
+- **Glas wie bei Apple:** Das Widget zeigt dein Hintergrundbild verschwommen hinter sich und passt so zum Desktop. Unschärfe und Tönung sind einstellbar, außerdem gibt es die Stile *Durchsichtig* und *Einfarbig*.
+- **Auto-Design:** Analysiert den Bildausschnitt hinter dem Widget und wählt Hell/Dunkel, Akzentfarbe, Tönung und Unschärfe passend. Wechselst du das Hintergrundbild oder verschiebst das Widget, passt es sich neu an. Das läuft **komplett auf deinem PC – ohne Internet und ohne API-Key**. Sobald du selbst etwas an Farbe oder Tönung änderst, schaltet es sich aus.
+- **Alles selbst einstellbar:** Größe (60–200 %, auch per **Strg + Mausrad** auf dem Widget), Breite, Ecken, Spalten, Kopfzeile, Prozent, Namen. Dazu die Vorlagen *Apple-Glas*, *Durchsichtig* und *Klassisch*.
+- **Warnung bei niedrigem Akku** als Windows-Benachrichtigung, mit einstellbarer Schwelle und Testknopf
+- **Startet mit Windows** – beim Autostart erscheint nur das Widget
+- Geräte **umbenennen** oder **ausblenden**, Symbol im Infobereich, Rechtsklick-Menü am Widget, **Demo-Modus**
 
 ## Welche Geräte werden erkannt?
 
-| System  | Quelle | Geräte |
-|---------|--------|--------|
-| Windows | Bluetooth-Akkustand, den auch *Einstellungen › Bluetooth & Geräte* anzeigt (über PowerShell, ohne Zusatzsoftware) | Bluetooth- und Bluetooth-LE-Mäuse, -Tastaturen, -Headsets und -Controller; Laptop-Akku |
-| Linux   | UPower | Bluetooth und viele Funkgeräte, z. B. Logitech Unifying/Bolt |
-| macOS   | ioreg / pmset | Apple- und Bluetooth-Geräte; MacBook-Akku |
+| Verbindung | Unterstützt |
+|------------|-------------|
+| **USB-Empfänger (2,4 GHz)** | **Logitech** Unifying, Bolt und Lightspeed (z. B. MX Master, MX Keys, G305, G Pro, G502 X), auch per USB-Kabel · **Razer** HyperSpeed/kabellos (z. B. Viper, DeathAdder, Basilisk) |
+| Bluetooth | Alles, was Windows unter *Einstellungen › Bluetooth & Geräte* mit Akkustand anzeigt |
+| Laptop | Eigener Akku des PCs |
 
-**Wichtig unter Windows:** Geräte mit eigenem USB-Empfänger (z. B. Logitech Bolt/Unifying, Razer HyperSpeed, Corsair Slipstream) melden ihren Akkustand an Windows meistens **nicht**, sondern nur an die Hersteller-App. Solche Geräte erscheinen nur, wenn sie zusätzlich per Bluetooth verbunden sind.
+Unter **Geräte › USB-Empfänger & Funkgeräte** zeigt die App, welche Empfänger sie gefunden hat und ob sich der Akku lesen lässt.
+
+**Andere Marken** (z. B. SteelSeries, Corsair, HyperX oder günstige No-Name-Empfänger) erkennt die App, sie zeigt deren Akku aber noch nicht an. Jeder Hersteller nutzt ein eigenes, meist geheimes Protokoll. Steht dein Empfänger dort als „Akku nicht lesbar“, schreib Marke, Modell und die angezeigte ID in ein Issue, dann kann Unterstützung ergänzt werden.
 
 ## Für Entwickler
 
@@ -48,20 +47,20 @@ Rechtsklick auf das Widget öffnet ein Menü: Aktualisieren, Einstellungen, Posi
 npm install
 npm start          # App starten
 npm run demo       # mit Beispielgeräten starten
-npm test           # Unit-Tests (Auslesen, Einstellungen)
-npm run test:ui    # klickt alle Seiten durch, prüft Stil und Bedienung, macht Screenshots
+npm test           # Unit-Tests (Bluetooth, USB-Empfänger, Auto-Design, Einstellungen)
+npm run test:ui    # klickt alles durch, prüft Stil und Bedienung, macht Screenshots
 npm run dist:win   # Windows-Installer bauen
 ```
 
-Bei jedem Push baut GitHub Actions die Programme für Windows, Linux und macOS automatisch, testet sie und veröffentlicht sie unter *Releases*.
-
-Aufbau:
+Bei jedem Push baut GitHub Actions die Programme für Windows, Linux und macOS automatisch, testet sie (auch auf Windows) und veröffentlicht sie unter *Releases*.
 
 ```
-src/main/           Hauptprozess: Fenster, Infobereich, Einstellungen, Autostart
-src/main/battery/   Auslesen des Akkustands je Betriebssystem
-src/renderer/       Widget und Einstellungsfenster (HTML/CSS/JS)
-build/              App-Icon (SVG, PNG, ICO)
+src/main/               Hauptprozess: Fenster, Infobereich, Einstellungen, Autostart
+src/main/battery/       Akkustand: Bluetooth/System je Betriebssystem
+src/main/battery/hid/   USB-Empfänger: Logitech HID++ 2.0, Razer
+src/main/autodesign.js  Auto-Design (lokale Bildanalyse)
+src/main/wallpaper.js   Hintergrundbild für den Glas-Effekt
+src/renderer/           Widget und Einstellungsfenster
 ```
 
 ## Lizenz

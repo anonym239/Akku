@@ -18,14 +18,22 @@
 
   const SOURCES = {
     win32:
-      'Windows speichert den Akkustand gekoppelter Bluetooth-Geräte (auch Bluetooth LE) – dieselben Werte, die unter „Einstellungen › Bluetooth & Geräte“ stehen. Das Widget fragt sie im Hintergrund über PowerShell ab, ganz ohne Zusatzsoftware. Geräte mit eigenem USB-Empfänger (z. B. Logitech Bolt/Unifying oder Razer HyperSpeed) melden ihren Akku unter Windows meist nur an die Hersteller-App und erscheinen deshalb nicht.',
+      'Windows speichert den Akkustand gekoppelter Bluetooth-Geräte (auch Bluetooth LE) – dieselben Werte, die unter „Einstellungen › Bluetooth & Geräte“ stehen. Das Widget fragt sie im Hintergrund über PowerShell ab, ganz ohne Zusatzsoftware. Zusätzlich spricht das Widget direkt mit USB-Funkempfängern: Logitech (Unifying, Bolt, Lightspeed – auch per Kabel) und Razer (HyperSpeed). Andere Empfänger erscheinen unter „Geräte“, ihr Akku ist aber noch nicht lesbar.',
     linux: 'Unter Linux kommt der Akkustand von UPower. Dazu zählen Bluetooth-Geräte und viele Funkmäuse mit USB-Empfänger, z. B. Logitech Unifying/Bolt.',
     darwin: 'Unter macOS liest das Widget die Werte von ioreg (Bluetooth- und Apple-Geräte) und pmset (Akku des Macs).',
   };
   const PLATFORM = { win32: 'Windows', linux: 'Linux', darwin: 'macOS' };
 
+  // Vorlagen für einen schnellen Wechsel des Stils
+  const PRESETS = {
+    apple: { style: 'glass', layout: 'gauge', gaugeText: 'below', columns: 0, radius: 26, blur: 26, showHeader: false, showStatus: false, scale: 100 },
+    clear: { style: 'transparent', layout: 'list', opacity: 0.12, radius: 22, showHeader: true, showStatus: true, width: 19, scale: 100, autoDesign: false },
+    classic: { style: 'solid', layout: 'list', radius: 20, showHeader: true, showStatus: true, width: 19, scale: 100, autoDesign: false },
+  };
+
   let cfg = null;
-  let state = { devices: [], error: null, at: 0 };
+  let state = { devices: [], receivers: [], error: null, at: 0 };
+  let wallpaper = null;
 
   // ---------------------------------------------------------- Icons & Fenster
 
@@ -60,6 +68,15 @@
 
   // ---------------------------------------------------------- Einstellungen speichern
 
+  // Eigene Änderungen an Farbe/Tönung schalten das Auto-Design aus.
+  function manual(partial, el) {
+    if (el && el.closest('[data-manual]') && cfg.autoDesign) {
+      toast('Auto-Design aus – deine Einstellung gilt');
+      return { ...partial, autoDesign: false };
+    }
+    return partial;
+  }
+
   async function save(partial, message) {
     cfg = await api.setConfig(partial);
     renderAll();
@@ -73,7 +90,9 @@
   $$('.segmented[data-key]').forEach((group) => {
     group.addEventListener('click', (e) => {
       const btn = e.target.closest('button[data-value]');
-      if (btn) save({ [group.dataset.key]: btn.dataset.value });
+      if (!btn) return;
+      const value = 'number' in group.dataset ? Number(btn.dataset.value) : btn.dataset.value;
+      save(manual({ [group.dataset.key]: value }, group));
     });
   });
 
@@ -86,7 +105,7 @@
       renderPreview();
       renderThresholdDemo();
     });
-    input.addEventListener('change', () => save({ [input.dataset.key]: Number(input.value) / scale }));
+    input.addEventListener('change', () => save(manual({ [input.dataset.key]: Number(input.value) / scale }, input)));
   });
 
   $$('select[data-key]').forEach((select) => {
@@ -100,12 +119,13 @@
       `<label class="swatch custom" title="Eigene Farbe"><input type="color" id="customColor" /></label>`;
     box.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-color]');
-      if (btn) save({ accent: btn.dataset.color });
+      if (btn) save(manual({ accent: btn.dataset.color }, box));
     });
+    box.closest('.row').setAttribute('data-manual', '');
     $('#customColor').addEventListener('input', (e) => {
       document.documentElement.style.setProperty('--accent', e.target.value);
     });
-    $('#customColor').addEventListener('change', (e) => save({ accent: e.target.value }));
+    $('#customColor').addEventListener('change', (e) => save(manual({ accent: e.target.value }, box)));
   }
 
   $('#refreshBtn').addEventListener('click', async () => {
@@ -119,6 +139,14 @@
     } finally {
       btn.classList.remove('is-busy');
     }
+  });
+  $('#presets').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-preset]');
+    if (btn) save(PRESETS[btn.dataset.preset], 'Vorlage übernommen');
+  });
+  $('#testNotifyBtn').addEventListener('click', async () => {
+    const ok = await api.testNotification();
+    toast(ok ? 'Test-Benachrichtigung gesendet' : 'Benachrichtigungen werden hier nicht unterstützt');
   });
   $('#demoBtn').addEventListener('click', () => save({ demo: true }, 'Demo-Modus aktiviert'));
   $('#resetPosBtn').addEventListener('click', () => save({ widgetPos: null }, 'Widget oben rechts platziert'));
@@ -138,8 +166,14 @@
       input.checked = Boolean(cfg[input.dataset.key]);
     });
     $$('.segmented[data-key]').forEach((group) => {
-      group.querySelectorAll('button').forEach((b) => b.classList.toggle('is-active', b.dataset.value === cfg[group.dataset.key]));
+      group.querySelectorAll('button').forEach((b) => b.classList.toggle('is-active', b.dataset.value === String(cfg[group.dataset.key])));
     });
+    // Zeilen nur zeigen, wenn sie zur Auswahl passen (data-when="layout=gauge,rings").
+    $$('[data-when]').forEach((row) => {
+      const [key, values] = row.dataset.when.split('=');
+      row.hidden = !values.split(',').includes(String(cfg[key]));
+    });
+    renderAutoResult();
     $$('select[data-key]').forEach((select) => {
       const value = String(cfg[select.dataset.key]);
       if (![...select.options].some((o) => o.value === value)) {
@@ -164,7 +198,10 @@
       const pct = ((input.value - input.min) / (input.max - input.min)) * 100;
       input.style.setProperty('--fill', pct + '%');
     });
-    $('#opacityOut').textContent = Math.round(cfg.opacity * 100) + ' %';
+    $$('output[data-out]').forEach((out) => {
+      const v = cfg[out.dataset.out] * Number(out.dataset.scale || 1) * Number(out.dataset.mult || 1);
+      out.textContent = Math.round(v) + (out.dataset.suffix || '');
+    });
     $('#thresholdOut').textContent = cfg.lowThreshold + ' %';
   }
 
@@ -249,11 +286,69 @@
 
   function renderPreview() {
     const card = $('#previewCard');
+    const stage = $('#previewStage');
     const real = UI.visibleDevices(state.devices, cfg).length > 0;
     const previewState = real ? state : { devices: SAMPLE, error: null, at: Date.now() };
     const previewCfg = real ? cfg : { ...cfg, hidden: [], names: {} };
-    UI.applyCardStyle(card, previewCfg);
+    const hasWall = Boolean(wallpaper && wallpaper.url);
+    UI.applyCardStyle(card, previewCfg, { hasWallpaper: hasWall });
     card.innerHTML = UI.widgetHtml(previewState, previewCfg);
+    // Die Vorschau zeigt dein echtes Hintergrundbild, das Glas den Ausschnitt dahinter.
+    stage.classList.toggle('has-wallpaper', hasWall);
+    if (!hasWall) {
+      stage.style.backgroundImage = '';
+      return;
+    }
+    const wall = { ...wallpaper, fit: 'fill' };
+    const a = stage.getBoundingClientRect();
+    const area = { x: a.left, y: a.top, width: a.width, height: a.height, scaleFactor: 1 };
+    const p = UI.wallpaperPlacement(wall, area);
+    stage.style.backgroundImage = `url("${wallpaper.url}")`;
+    stage.style.backgroundSize = `${p.w}px ${p.h}px`;
+    stage.style.backgroundPosition = `${p.x - a.left}px ${p.y - a.top}px`;
+    const r = card.getBoundingClientRect();
+    UI.placeGlass(card, wall, area, { left: r.left, top: r.top });
+  }
+
+  function renderAutoResult() {
+    const el = $('#autoResult');
+    el.hidden = !cfg.autoDesign;
+    if (!cfg.autoDesign) return;
+    const tone = cfg.widgetTone === 'light' ? 'Hell' : cfg.widgetTone === 'dark' ? 'Dunkel' : 'Wie Design';
+    const style = { glass: 'Glas', transparent: 'Durchsichtig', solid: 'Einfarbig' }[cfg.style];
+    const found = wallpaper && wallpaper.url;
+    el.innerHTML = `
+      <div class="auto-chips">
+        <span class="auto-chip"><i class="dot" style="background:${UI.esc(cfg.accent)}"></i>Akzent</span>
+        <span class="auto-chip">${tone}</span>
+        <span class="auto-chip">${style}</span>
+        <span class="auto-chip">Tönung ${Math.round(cfg.opacity * 100)} %</span>
+        <span class="auto-chip">Unschärfe ${cfg.blur} px</span>
+      </div>
+      <small>${found ? 'Passend zum Bildausschnitt hinter dem Widget gewählt. Verschiebst du das Widget oder wechselst du das Hintergrundbild, passt es sich neu an.' : 'Kein Hintergrundbild gefunden – das Widget folgt dem Systemdesign.'}</small>`;
+  }
+
+  function renderReceivers() {
+    const list = state.receivers || [];
+    $('#receiversBox').hidden = list.length === 0;
+    const text = {
+      ok: (r) => `Akku wird gelesen${r.count ? ` (${r.count} ${r.count === 1 ? 'Gerät' : 'Geräte'})` : ''}`,
+      offline: () => 'Gerät aus oder im Schlafmodus',
+      empty: () => 'Erkannt, aber kein eingeschaltetes Gerät',
+      error: (r) => `Kein Zugriff: ${r.message || 'unbekannter Fehler'}`,
+      unsupported: (r) => `Akku nicht lesbar (ID ${r.vid}:${r.pid})`,
+    };
+    const tone = { ok: 'good', offline: 'warn', empty: 'warn', error: 'bad', unsupported: 'muted' };
+    $('#receiverList').innerHTML = list
+      .map(
+        (r) => `
+        <div class="row receiver tone-${tone[r.status] || 'muted'}">
+          <div class="device-ico small">${ICONS.other}</div>
+          <div class="row-text"><strong>${UI.esc(r.name)}</strong><small>${UI.esc(r.vendor)} · ${r.kind === 'receiver' ? 'USB-Empfänger' : 'USB-Gerät'}</small></div>
+          <span class="chip">${UI.esc((text[r.status] || text.empty)(r))}</span>
+        </div>`
+      )
+      .join('');
   }
 
   function renderThresholdDemo() {
@@ -289,6 +384,7 @@
     UI.applyTheme(cfg);
     syncControls();
     renderDevices();
+    renderReceivers();
     renderPreview();
     renderThresholdDemo();
   }
@@ -301,8 +397,16 @@
   api.onDevices((s) => {
     state = s;
     renderDevices();
+    renderReceivers();
     renderPreview();
   });
+  api.onWallpaper((w) => {
+    wallpaper = w;
+    renderPreview();
+    renderAutoResult();
+  });
+  window.addEventListener('resize', () => cfg && renderPreview());
+  $$('.nav-item').forEach((b) => b.addEventListener('click', () => cfg && requestAnimationFrame(renderPreview)));
   api.onConfig((c) => {
     cfg = c;
     renderAll();
@@ -312,7 +416,8 @@
 
   api.getState().then((s) => {
     cfg = s.config;
-    state = { devices: s.devices, error: s.error, at: s.at };
+    state = { devices: s.devices, receivers: s.receivers, error: s.error, at: s.at };
+    wallpaper = s.wallpaper;
     renderAbout(s);
     renderAll();
   });

@@ -73,10 +73,15 @@
 
           <div class="device-list" id="deviceList"></div>
 
+          <div class="receivers" id="receiversBox" hidden>
+            <h2 class="section-title">USB-Empfänger &amp; Funkgeräte</h2>
+            <div class="card" id="receiverList"></div>
+          </div>
+
           <div class="empty" id="emptyBox" hidden>
             <div class="empty-ico" data-icon="other"></div>
             <h2>Noch keine Geräte gefunden</h2>
-            <p id="emptyHint">Koppel deine Maus, Tastatur oder dein Headset per Bluetooth. Sobald Windows den Akkustand kennt, erscheint das Gerät hier automatisch.</p>
+            <p id="emptyHint">Stecke den USB-Empfänger deiner Maus oder Tastatur ein oder koppel ein Gerät per Bluetooth. Sobald der Akkustand lesbar ist, erscheint es hier automatisch.</p>
             <button class="btn" id="demoBtn"><span data-icon="sparkles"></span>Demo-Geräte anzeigen</button>
           </div>
         </section>
@@ -92,11 +97,112 @@
 
           <div class="look-grid">
             <div class="cards">
+              <div class="card auto-card">
+                <label class="row">
+                  <div class="row-text">
+                    <strong><span class="inline-ico" data-icon="sparkles"></span>Auto-Design</strong>
+                    <small>Passt Helligkeit, Farbe, Tönung und Unschärfe automatisch an dein Hintergrundbild an – direkt auf dem PC, ohne Internet und ohne API-Key.</small>
+                  </div>
+                  <span class="switch"><input type="checkbox" data-key="autoDesign" /><i></i></span>
+                </label>
+                <div class="row auto-result" id="autoResult"></div>
+              </div>
+
+              <div class="presets" id="presets">
+                <button class="preset" data-preset="apple">
+                  <span class="preset-gfx preset-apple"><i></i><i></i><i></i><i></i></span>
+                  <strong>Apple-Glas</strong><small>Bögen auf Milchglas</small>
+                </button>
+                <button class="preset" data-preset="clear">
+                  <span class="preset-gfx preset-clear"><b></b><b></b><b></b></span>
+                  <strong>Durchsichtig</strong><small>Nur Inhalt, kaum Hintergrund</small>
+                </button>
+                <button class="preset" data-preset="classic">
+                  <span class="preset-gfx preset-classic"><b></b><b></b><b></b></span>
+                  <strong>Klassisch</strong><small>Liste auf fester Karte</small>
+                </button>
+              </div>
+
               <div class="card">
                 <div class="row">
-                  <div class="row-text"><strong>Design</strong><small>Hell, dunkel oder wie das System</small></div>
-                  <div class="segmented" data-key="theme">
-                    <button data-value="auto">Automatisch</button>
+                  <div class="row-text"><strong>Darstellung</strong><small>Bogen wie bei iOS, volle Ringe oder Liste mit Balken</small></div>
+                  <div class="segmented" data-key="layout">
+                    <button data-value="gauge">Bogen</button>
+                    <button data-value="rings">Ringe</button>
+                    <button data-value="list">Liste</button>
+                  </div>
+                </div>
+                <div class="row" data-when="layout=gauge">
+                  <div class="row-text"><strong>Prozentanzahl</strong><small>Wo die Zahl beim Bogen steht</small></div>
+                  <div class="segmented" data-key="gaugeText">
+                    <button data-value="below">Darunter</button>
+                    <button data-value="gap">In der Lücke</button>
+                    <button data-value="none">Aus</button>
+                  </div>
+                </div>
+                <div class="row" data-when="layout=gauge,rings">
+                  <div class="row-text"><strong>Spalten</strong></div>
+                  <div class="segmented" data-key="columns" data-number>
+                    <button data-value="0">Auto</button>
+                    <button data-value="1">1</button>
+                    <button data-value="2">2</button>
+                    <button data-value="3">3</button>
+                    <button data-value="4">4</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="row">
+                  <div class="row-text"><strong>Größe</strong><small>Tipp: Strg + Mausrad auf dem Widget</small></div>
+                  <div class="range">
+                    <input type="range" min="60" max="200" step="5" data-key="scale" />
+                    <output data-out="scale" data-suffix=" %"></output>
+                  </div>
+                </div>
+                <div class="row" data-when="layout=list">
+                  <div class="row-text"><strong>Breite</strong></div>
+                  <div class="range">
+                    <input type="range" min="14" max="32" step="0.5" data-key="width" />
+                    <output data-out="width" data-mult="14" data-suffix=" px"></output>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="row-text"><strong>Ecken</strong><small>Von eckig bis ganz rund</small></div>
+                  <div class="range">
+                    <input type="range" min="0" max="40" step="1" data-key="radius" />
+                    <output data-out="radius" data-suffix=" px"></output>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="row">
+                  <div class="row-text"><strong>Hintergrund</strong><small>Glas zeigt dein Hintergrundbild verschwommen – wie bei Apple</small></div>
+                  <div class="segmented" data-key="style" data-manual>
+                    <button data-value="glass">Glas</button>
+                    <button data-value="transparent">Durchsichtig</button>
+                    <button data-value="solid">Einfarbig</button>
+                  </div>
+                </div>
+                <div class="row" data-when="style=glass">
+                  <div class="row-text"><strong>Unschärfe</strong></div>
+                  <div class="range">
+                    <input type="range" min="0" max="40" step="1" data-key="blur" data-manual />
+                    <output data-out="blur" data-suffix=" px"></output>
+                  </div>
+                </div>
+                <div class="row" data-when="style=glass,transparent">
+                  <div class="row-text"><strong>Tönung</strong><small>0 % = ganz durchsichtig</small></div>
+                  <div class="range">
+                    <input type="range" min="0" max="100" step="1" data-key="opacity" data-scale="100" data-manual />
+                    <output data-out="opacity" data-scale="100" data-suffix=" %"></output>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="row-text"><strong>Widget hell oder dunkel</strong></div>
+                  <div class="segmented" data-key="widgetTone" data-manual>
+                    <button data-value="theme">Wie Design</button>
                     <button data-value="dark">Dunkel</button>
                     <button data-value="light">Hell</button>
                   </div>
@@ -105,34 +211,21 @@
                   <div class="row-text"><strong>Akzentfarbe</strong><small>Für Logo, Knöpfe und Hervorhebungen</small></div>
                   <div class="swatches" id="swatches"></div>
                 </div>
-              </div>
-
-              <div class="card">
                 <div class="row">
-                  <div class="row-text"><strong>Darstellung</strong><small>Liste mit Balken oder Ringe wie am Handy</small></div>
-                  <div class="segmented" data-key="layout">
-                    <button data-value="list">Liste</button>
-                    <button data-value="rings">Ringe</button>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="row-text"><strong>Größe</strong></div>
-                  <div class="segmented" data-key="size">
-                    <button data-value="compact">Kompakt</button>
-                    <button data-value="normal">Normal</button>
-                    <button data-value="large">Groß</button>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="row-text"><strong>Deckkraft</strong><small>Hintergrund des Widgets</small></div>
-                  <div class="range">
-                    <input type="range" min="30" max="100" step="1" data-key="opacity" data-scale="100" />
-                    <output id="opacityOut">92 %</output>
+                  <div class="row-text"><strong>Design der App</strong><small>Hell, dunkel oder wie das System</small></div>
+                  <div class="segmented" data-key="theme">
+                    <button data-value="auto">Automatisch</button>
+                    <button data-value="dark">Dunkel</button>
+                    <button data-value="light">Hell</button>
                   </div>
                 </div>
               </div>
 
               <div class="card">
+                <label class="row">
+                  <div class="row-text"><strong>Kopfzeile anzeigen</strong><small>„Akkus“ und Uhrzeit der letzten Abfrage</small></div>
+                  <span class="switch"><input type="checkbox" data-key="showHeader" /><i></i></span>
+                </label>
                 <label class="row">
                   <div class="row-text"><strong>Prozent anzeigen</strong></div>
                   <span class="switch"><input type="checkbox" data-key="showPercent" /><i></i></span>
@@ -153,7 +246,7 @@
             </div>
 
             <aside class="preview">
-              <span class="preview-label">Vorschau</span>
+              <span class="preview-label">Vorschau auf deinem Hintergrund</span>
               <div class="preview-stage" id="previewStage"><div class="w-card" id="previewCard"></div></div>
             </aside>
           </div>
@@ -221,7 +314,7 @@
           <div class="cards">
             <div class="card">
               <label class="row">
-                <div class="row-text"><strong>Bei niedrigem Akku warnen</strong><small>Einmalige Windows-Benachrichtigung pro Gerät</small></div>
+                <div class="row-text"><strong>Bei niedrigem Akku warnen</strong><small>Windows-Benachrichtigung, sobald ein Gerät die Warnschwelle erreicht</small></div>
                 <span class="switch"><input type="checkbox" data-key="notifyLow" /><i></i></span>
               </label>
               <div class="row">
@@ -230,6 +323,12 @@
                   <input type="range" min="5" max="50" step="5" data-key="lowThreshold" />
                   <output id="thresholdOut">20 %</output>
                 </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="row">
+                <div class="row-text"><strong>Benachrichtigung testen</strong><small>Zeigt sofort eine Beispiel-Warnung</small></div>
+                <button class="btn" id="testNotifyBtn"><span data-icon="bell"></span>Testen</button>
               </div>
             </div>
             <div class="threshold-demo" id="thresholdDemo"></div>

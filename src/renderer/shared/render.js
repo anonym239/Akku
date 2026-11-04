@@ -18,7 +18,6 @@
     other: 'Gerät',
   };
 
-  const SIZES = { compact: 12, normal: 14, large: 16 };
 
   function esc(value) {
     return String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -95,7 +94,35 @@
       </div>`;
   }
 
-  function ringColumns(count) {
+  // Bogen wie im iOS-Akku-Widget: beginnt unten links, läuft im
+  // Uhrzeigersinn über oben nach unten rechts (270°). Icon in der Mitte.
+  const GAUGE_SWEEP = 0.75;
+
+  function gaugeHtml(d, cfg) {
+    const tone = d.charging ? 'charge' : levelTone(d.level, cfg.lowThreshold);
+    const r = 26;
+    const c = 2 * Math.PI * r;
+    const arc = c * GAUGE_SWEEP;
+    const val = (Math.max(0, Math.min(100, d.level)) / 100) * arc;
+    const text = cfg.showPercent ? cfg.gaugeText : 'none';
+    return `
+      <div class="w-gauge tone-${tone}${d.connected ? '' : ' is-off'}" title="${esc(d.name)} – ${d.level} % · ${esc(statusText(d, cfg))}">
+        <div class="w-gauge-gfx">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <circle class="track" cx="32" cy="32" r="${r}" stroke-dasharray="${arc.toFixed(2)} ${c.toFixed(2)}"/>
+            <circle class="value" cx="32" cy="32" r="${r}" stroke-dasharray="${val.toFixed(2)} ${c.toFixed(2)}"/>
+          </svg>
+          <div class="w-gauge-ico">${deviceIcon(d.type)}</div>
+          ${text === 'gap' ? `<div class="w-gauge-gap">${d.charging ? `<i class="w-bolt">${ICONS.bolt}</i>` : ''}${d.level}<small>%</small></div>` : ''}
+          ${d.charging && text !== 'gap' ? `<i class="w-gauge-bolt">${ICONS.bolt}</i>` : ''}
+        </div>
+        ${text === 'below' ? `<div class="w-ring-pct">${d.level}<small>%</small></div>` : ''}
+        ${cfg.showStatus ? `<div class="w-ring-name">${esc(d.name)}</div>` : ''}
+      </div>`;
+  }
+
+  function ringColumns(count, wanted) {
+    if (wanted >= 1) return Math.min(wanted, Math.max(1, count));
     if (count <= 1) return 1;
     if (count <= 4) return count === 3 ? 3 : 2;
     return count <= 6 ? 3 : 4;
@@ -113,13 +140,25 @@
           <div class="w-empty-text">${esc(state.error ? state.error : 'Koppel eine Maus, Tastatur oder ein Headset per Bluetooth.')}</div>
           <button class="w-btn" data-act="settings">Einstellungen</button>
         </div>`;
-    } else if (cfg.layout === 'rings') {
-      body = `<div class="w-grid" style="--cols:${ringColumns(devices.length)}">${devices.map((d) => ringHtml(d, cfg)).join('')}</div>`;
+    } else if (cfg.layout === 'rings' || cfg.layout === 'gauge') {
+      const cell = cfg.layout === 'gauge' ? gaugeHtml : ringHtml;
+      body = `<div class="w-grid" style="--cols:${ringColumns(devices.length, cfg.columns)}">${devices.map((d) => cell(d, cfg)).join('')}</div>`;
     } else {
       body = `<div class="w-list">${devices.map((d) => rowHtml(d, cfg)).join('')}</div>`;
     }
     const time = state.at ? relTime(state.at, opts.now) : 'lädt …';
-    return `
+    const layers = '<div class="w-bg-img" aria-hidden="true"></div><div class="w-bg-tint" aria-hidden="true"></div>';
+    if (!cfg.showHeader) {
+      return `${layers}
+      <div class="w-tools w-tools-float">
+        <span class="w-btns">
+          <button class="w-icon-btn" data-act="refresh" title="Aktualisieren">${ICONS.refresh}</button>
+          <button class="w-icon-btn" data-act="settings" title="Einstellungen">${ICONS.settings}</button>
+        </span>
+      </div>
+      ${body}`;
+    }
+    return `${layers}
       <div class="w-head">
         <div class="w-title"><span class="w-logo">${ICONS.battery}</span>Akkus</div>
         <div class="w-tools">
@@ -133,10 +172,67 @@
       ${body}`;
   }
 
-  function applyCardStyle(card, cfg) {
-    card.className = `w-card layout-${cfg.layout}${cfg.locked ? ' is-locked' : ''}`;
-    card.style.fontSize = (SIZES[cfg.size] || 14) + 'px';
-    card.style.setProperty('--w-opacity', String(Math.round(cfg.opacity * 100)) + '%');
+  function applyCardStyle(card, cfg, opts = {}) {
+    const glassReady = cfg.style === 'glass' && opts.hasWallpaper;
+    card.dataset.theme = cfg.widgetTone === 'dark' || cfg.widgetTone === 'light' ? cfg.widgetTone : resolveTheme(cfg);
+    card.style.setProperty('--accent', cfg.accent);
+    card.className = `w-card layout-${cfg.layout} style-${cfg.style}${glassReady ? ' has-wallpaper' : ''}${cfg.showHeader ? '' : ' no-head'}${cfg.locked ? ' is-locked' : ''}`;
+    card.style.fontSize = (14 * cfg.scale) / 100 + 'px';
+    card.style.setProperty('--w-opacity', String(Math.round((cfg.style === 'solid' ? 1 : cfg.opacity) * 100)) + '%');
+    card.style.setProperty('--w-width', cfg.width + 'em');
+    card.style.setProperty('--w-radius', cfg.radius / 14 + 'em');
+    card.style.setProperty('--w-blur', cfg.blur + 'px');
+  }
+
+  // Berechnet, wie das Hintergrundbild auf einer Fläche (Bildschirm bzw.
+  // Vorschau) liegt: Position und Größe in denselben Koordinaten wie area.
+  function wallpaperPlacement(wall, area) {
+    const sf = area.scaleFactor || 1;
+    const iw = wall.width / sf;
+    const ih = wall.height / sf;
+    let w = area.width;
+    let h = area.height;
+    let repeat = false;
+    if (wall.fit === 'fill' || wall.fit === 'span') {
+      const k = Math.max(area.width / iw, area.height / ih);
+      w = iw * k;
+      h = ih * k;
+    } else if (wall.fit === 'fit') {
+      const k = Math.min(area.width / iw, area.height / ih);
+      w = iw * k;
+      h = ih * k;
+    } else if (wall.fit === 'center') {
+      w = iw;
+      h = ih;
+    } else if (wall.fit === 'tile') {
+      w = iw;
+      h = ih;
+      repeat = true;
+    }
+    const x = repeat ? area.x : area.x + (area.width - w) / 2;
+    const y = repeat ? area.y : area.y + (area.height - h) / 2;
+    return { x, y, w, h, repeat };
+  }
+
+  // Legt den passenden, verschwommenen Bildausschnitt hinter die Karte.
+  // cardRect und area müssen im selben Koordinatensystem liegen.
+  function placeGlass(card, wall, area, cardRect) {
+    const layer = card.querySelector('.w-bg-img');
+    if (!layer) return;
+    if (!wall || !wall.url || !area || !cardRect) {
+      layer.style.backgroundImage = '';
+      return;
+    }
+    const p = wallpaperPlacement(wall, area);
+    // Die Ebene ist größer als die Karte, damit die Ränder beim Verwischen nicht ausbleichen.
+    const pad = parseFloat(getComputedStyle(layer).getPropertyValue('--pad')) || 0;
+    const left = cardRect.left - pad;
+    const top = cardRect.top - pad;
+    layer.style.backgroundColor = wall.color || '#000';
+    layer.style.backgroundImage = `url("${wall.url}")`;
+    layer.style.backgroundRepeat = p.repeat ? 'repeat' : 'no-repeat';
+    layer.style.backgroundSize = `${p.w}px ${p.h}px`;
+    layer.style.backgroundPosition = `${p.x - left}px ${p.y - top}px`;
   }
 
   function resolveTheme(cfg) {
@@ -155,5 +251,5 @@
   window.addEventListener('error', (e) => window.__errors.push(String(e.message)));
   window.addEventListener('unhandledrejection', (e) => window.__errors.push(String(e.reason)));
 
-  window.AkkuUI = { TYPE_LABEL, esc, levelTone, visibleDevices, statusText, relTime, widgetHtml, applyCardStyle, applyTheme, resolveTheme, deviceIcon, ringColumns };
+  window.AkkuUI = { TYPE_LABEL, esc, levelTone, visibleDevices, statusText, relTime, widgetHtml, applyCardStyle, applyTheme, resolveTheme, deviceIcon, ringColumns, gaugeHtml, wallpaperPlacement, placeGlass };
 })();

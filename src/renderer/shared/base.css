@@ -10,7 +10,8 @@
   color-scheme: dark;
 }
 
-:root[data-theme="dark"] {
+:root[data-theme="dark"],
+[data-theme="dark"] {
   --bg: #12131a;
   --bg-2: #171821;
   --surface: #1d1f2a;
@@ -27,7 +28,8 @@
   color-scheme: dark;
 }
 
-:root[data-theme="light"] {
+:root[data-theme="light"],
+[data-theme="light"] {
   --bg: #f3f4f9;
   --bg-2: #eceef5;
   --surface: #ffffff;

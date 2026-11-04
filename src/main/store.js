@@ -6,9 +6,18 @@ const path = require('path');
 const DEFAULTS = Object.freeze({
   theme: 'auto', // auto | dark | light
   accent: '#7c5cff',
-  layout: 'list', // list | rings
-  size: 'normal', // compact | normal | large
-  opacity: 0.92,
+  style: 'glass', // glass (wie Apple) | transparent | solid
+  autoDesign: true, // Aussehen automatisch an das Hintergrundbild anpassen
+  widgetTone: 'theme', // theme | dark | light – Helligkeit des Widgets
+  layout: 'gauge', // gauge (Bogen wie iOS) | rings | list
+  gaugeText: 'below', // below | gap | none – wo die Prozentzahl beim Bogen steht
+  scale: 100, // Größe in %
+  width: 19, // Breite der Liste (em)
+  columns: 0, // Spalten bei Ringen, 0 = automatisch
+  radius: 24, // Eckenradius in px bei 100 %
+  blur: 24, // Unschärfe des Hintergrundbilds (Glas)
+  opacity: 0.4, // Tönung bzw. Deckkraft des Hintergrunds
+  showHeader: true,
   showPercent: true,
   showStatus: true,
   showSystemBattery: true,
@@ -28,15 +37,22 @@ const DEFAULTS = Object.freeze({
 });
 
 const LIMITS = {
-  opacity: [0.3, 1],
+  opacity: [0, 1],
   refreshSec: [10, 3600],
   lowThreshold: [5, 50],
+  scale: [60, 200],
+  width: [14, 32],
+  columns: [0, 4],
+  radius: [0, 40],
+  blur: [0, 40],
 };
 
 const ENUMS = {
   theme: ['auto', 'dark', 'light'],
-  layout: ['list', 'rings'],
-  size: ['compact', 'normal', 'large'],
+  layout: ['list', 'rings', 'gauge'],
+  gaugeText: ['below', 'gap', 'none'],
+  widgetTone: ['theme', 'dark', 'light'],
+  style: ['glass', 'transparent', 'solid'],
 };
 
 // Prüft und bereinigt einen (Teil-)Datensatz, damit kaputte Werte
@@ -78,6 +94,8 @@ class Store {
     this.data = { ...DEFAULTS };
     try {
       const raw = JSON.parse(fs.readFileSync(this.file, 'utf8'));
+      // Ältere Versionen kannten nur drei feste Größen.
+      if (raw.size && raw.scale === undefined) raw.scale = { compact: 85, normal: 100, large: 115 }[raw.size];
       Object.assign(this.data, sanitize(raw));
     } catch {
       // Erster Start oder kaputte Datei: Standardwerte verwenden.
