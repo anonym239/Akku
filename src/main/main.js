@@ -425,6 +425,15 @@ async function smokeTest() {
         if (r.width && (r.right > c.right + 1 || r.left < c.left - 1)) issues.push('ragt aus Karte: ' + el.className);
       }
     }
+    // Geräte-Icons müssen gerade stehen, nur Bogen und Ring sind gedreht.
+    for (const icon of document.querySelectorAll('.w-gauge-ico svg, .w-ring-ico svg, .w-ico svg, .device-ico svg')) {
+      const t = getComputedStyle(icon).transform;
+      if (t !== 'none' && t !== 'matrix(1, 0, 0, 1, 0, 0)') issues.push('Icon gedreht: ' + t);
+      for (let p = icon.parentElement; p && !p.classList.contains('w-card'); p = p.parentElement) {
+        const pt = getComputedStyle(p).transform;
+        if (pt !== 'none' && pt !== 'matrix(1, 0, 0, 1, 0, 0)' && !p.classList.contains('w-ring-bolt')) issues.push('Icon gedreht (Eltern): ' + pt);
+      }
+    }
     for (const img of document.querySelectorAll('img')) {
       if (!img.complete || img.naturalWidth === 0) issues.push('Bild fehlt: ' + img.getAttribute('src'));
     }

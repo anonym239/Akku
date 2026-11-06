@@ -360,7 +360,7 @@
   height: 3.9em;
 }
 
-.w-ring-gfx svg {
+.w-ring-gfx > svg {
   width: 100%;
   height: 100%;
   transform: rotate(-90deg);
@@ -512,7 +512,7 @@
   height: 4.4em;
 }
 
-.w-gauge-gfx svg {
+.w-gauge-gfx > svg {
   width: 100%;
   height: 100%;
   /* Start unten links (135°), 270° im Uhrzeigersinn bis unten rechts */
